@@ -3,19 +3,18 @@ from voicefixer.tools.pytorch_util import *
 from voicefixer.tools.wav import *
 from voicefixer.restorer.model import VoiceFixer as voicefixer_fe
 import os
-
+from pathlib import Path
 EPS = 1e-8
 
+DIR = os.path.dirname(os.path.abspath(__file__))
+VOICEFIXER_CHECKPOINT = os.path.join(Path(DIR).parent.parent, 'checkpoints/vf.ckpt')
+print("Voicefixer checkpoint path :",VOICEFIXER_CHECKPOINT)
 
 class VoiceFixer(nn.Module):
     def __init__(self):
         super(VoiceFixer, self).__init__()
         self._model = voicefixer_fe(channels=2, sample_rate=44100)
-        # print(os.path.join(os.path.expanduser('~'), ".cache/voicefixer/analysis_module/checkpoints/epoch=15_trimed_bn.ckpt"))
-        self.analysis_module_ckpt = os.path.join(
-                    os.path.expanduser("~"),
-                    ".cache/voicefixer/analysis_module/checkpoints/vf.ckpt",
-        )
+        self.analysis_module_ckpt = VOICEFIXER_CHECKPOINT
         if(not os.path.exists(self.analysis_module_ckpt)):
             raise RuntimeError("Error 0: The checkpoint for analysis module (vf.ckpt) is not found in ~/.cache/voicefixer/analysis_module/checkpoints. \
                                 By default the checkpoint should be download automatically by this program. Something bad may happened.\
@@ -144,3 +143,4 @@ class VoiceFixer(nn.Module):
             wav_10k, cuda=cuda, mode=mode, your_vocoder_func=your_vocoder_func
         )
         save_wave(out_np_wav, fname=output, sample_rate=44100)
+        return output
